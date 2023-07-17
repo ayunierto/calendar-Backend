@@ -1,9 +1,13 @@
 const express = require('express')
+const { dbConection } = require('./database/config')
 require('dotenv').config()
 
 
 // Create express server
 const app = express()
+
+// DataBase
+dbConection()
 
 // Servir la carpeta publica al usuario
 app.use( express.static("public") )
