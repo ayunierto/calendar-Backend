@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs')
 
 const createUser = async ( req, res ) => {
 
-    const { name, email, password } = req.body
+    const { email, password } = req.body
 
     try {
 
@@ -38,16 +38,43 @@ const createUser = async ( req, res ) => {
     }
 }
 
-const login = ( req, res ) => {
+const login = async ( req, res ) => {
 
-    const { email, password } = req.body
+    try {
 
-    res.status(200).json({
-        ok: true,
-        msg: 'login',
-        email,
-        password
-    })
+        const { email, password } = req.body
+
+        const user = await User.findOne({ email })
+    
+        if ( !user ) {
+            return res.status(400).json({
+                ok: false,
+                msg: 'Incorrect credentials',
+            })
+        }
+    
+        const validPassword = bcrypt.compareSync( password, user.password )
+    
+        if ( !validPassword ) {
+            return res.status(400).json({
+                ok: false,
+                msg: 'Incorrect credentials',
+            })
+        }
+    
+        res.status(200).json({
+            ok: true,
+            uid: user.id,
+            name: user.name
+        })
+
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({
+            ok: false,
+            msg: 'Incorrect credentials',
+        })
+    }
 }
 
 const renewToken = ( req, res ) => {
