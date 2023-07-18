@@ -2,6 +2,8 @@ const { validationResult } = require("express-validator")
 const User = require("../models/User")
 const bcrypt = require('bcryptjs')
 
+const { generateJWT } = require('../helpers/jwt')
+
 const createUser = async ( req, res ) => {
 
     const { email, password } = req.body
@@ -23,10 +25,14 @@ const createUser = async ( req, res ) => {
         user.password = bcrypt.hashSync( password, salt )
         await user.save() // Save
 
+        // generate token
+        const token = await generateJWT( user.id, user.name )
+
         res.status(201).json({
             ok: true,
             uid: user.id,
-            name: user.name
+            name: user.name,
+            token
         })
 
     } catch (error) {
@@ -61,11 +67,15 @@ const login = async ( req, res ) => {
                 msg: 'Incorrect credentials',
             })
         }
+
+        // generate token
+        const token = await generateJWT( user.id, user.name )
     
         res.status(200).json({
             ok: true,
             uid: user.id,
-            name: user.name
+            name: user.name,
+            token
         })
 
     } catch (error) {
